@@ -12,10 +12,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python2 \
     python3-pip\
-    g++ 
+    g++ \
+    git \
+    dc
 
 
-RUN mkdir /fsl_install && wget https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py -P /fsl_install
+RUN mkdir /fsl_install && wget https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/releases/fslinstaller.py -P /fsl_install
 
 RUN python2.7 /fsl_install/fslinstaller.py -d /usr/local/fsl
 
@@ -50,23 +52,31 @@ RUN python3 -m pip install \
 
 RUN mkdir -p /.config/matplotlib && chmod 777 -R /.config/
 
-RUN echo "alias python=python3.7" >> /etc/bash.bashrc && /bin/bash -c 'source /etc/bash.bashrc'
+RUN echo "alias python=python3" >> /etc/bash.bashrc && /bin/bash -c 'source /etc/bash.bashrc'
 
 ENV MPLCONFIGDIR='/.config/matplotlib'
 
 # COPY /app/ /app/
 
-ENV FSLOUTPUTTYPE='NIFTI_GZ'
+# Set FSL environment variables
+ENV FSLDIR=/usr/local/fsl
+ENV PATH=${FSLDIR}/bin:${PATH}
+ENV FSLOUTPUTTYPE=NIFTI_GZ
+
+# Source the FSL configuration script
+# RUN echo "source ${FSLDIR}/etc/fslconf/fsl.sh" >> /etc/profile
 
 SHELL ["/bin/bash", "-c"]
 
-Run echo "alias python=python3.7" >> ~/.bashrc && \
-    echo "alias python=python3.7" >> /etc/profile && source /etc/profile
+Run echo "alias python=python3" >> ~/.bashrc && \
+    echo "alias python=python3" >> /etc/profile && source /etc/profile
 
 ENV HOME=/home
 
 RUN chmod -R 777 /home
 
 RUN mkdir /data && chmod -R 777 /data
+
+
 
 # ENTRYPOINT ["/bin/bash", "/app/autorun.sh"]
